@@ -1,0 +1,8 @@
+# Pinned to what was actually installed and run, not to remembered versions.
+anthropic==1.13.0
+fastapi==0.143.0
+uvicorn==0.54.0
+pydantic==2.14.1
+python-dotenv==1.2.4
+supabase==2.32.0
+httpx==0.28.1
