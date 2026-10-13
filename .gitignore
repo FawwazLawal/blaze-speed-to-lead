@@ -1,0 +1,14 @@
+# Secrets — this entry exists in the first commit, before any key was on disk.
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# OS
+.DS_Store
