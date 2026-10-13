@@ -3,9 +3,9 @@
 A Facebook lead ad comes in. A scored, personalised reply is sitting in Discord
 **4.7 seconds** later.
 
-Blaze's current first response to an inbound lead takes **22 hours**. 58 qualified
-property managers produced 12 bookings last quarter — 79% lost, with that 22-hour
-delay sitting in the middle of the gap. This is the smallest thing that closes it.
+Blaze's inbound first response takes **22 hours**. The lead has moved on by then —
+the useful window is while they still have the tab open. This is the smallest
+thing that closes it.
 
 ```
 POST /webhook/lead
@@ -21,9 +21,9 @@ POST /webhook/lead
 
 ## What it is not
 
-This is a two-hour build and it is scoped like one. There is no Facebook OAuth —
-the payload is fabricated and fired with `curl`. No UI, no queue, no retries, no
-auth, no deploy. One happy path, measured.
+This is a deliberately small build. There is no Facebook OAuth — the payload is
+fabricated and fired with `curl`. No UI, no queue, no auth, no
+deploy, and no application-level retries. One happy path, measured.
 
 **Nothing in this project contacts a real business or person.** The lead is
 invented: `Northgate Property Group` does not exist, the address is
@@ -142,7 +142,8 @@ here: they need a beta header and the `client.beta.messages` path, and a safety
 refusal while scoring a fabricated property-management lead is close to
 impossible. Called out rather than quietly dropped.
 
-**One happy path.** There is no retry, no queue, no dead-letter handling. If
+**One happy path.** No queue, no dead-letter handling, and no application-level
+retry (the Anthropic call retries once at the SDK level; nothing else does). If
 Supabase or Discord is down, the request fails and the lead is lost. A real
 version needs the webhook to return 200 immediately and do the work on a queue —
 a lead that arrives during an outage must not evaporate.
