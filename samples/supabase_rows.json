@@ -1,0 +1,47 @@
+[
+  {
+    "id": 2,
+    "received_at": "2026-10-13T19:38:46.372592+00:00",
+    "name": "Dana Whitfield",
+    "email": "dana.whitfield@example.com",
+    "phone": "+1-555-0142",
+    "company": "Northgate Property Group",
+    "doors": 420,
+    "message": "We manage 420 doors across three markets and our books are a mess. Month-end close takes our bookkeeper nine days and we are still chasing late rent from August. Lost our bookkeeper in September and have not replaced her.",
+    "fit_score": 4,
+    "reason": "420 doors, books a mess: nine-day month-end close, August arrears, bookkeeper left in September and not replaced.",
+    "reply": "Hi Dana, managing 420 doors across three markets with a nine-day month-end close and August rent still outstanding is a heavy load, especially without a bookkeeper since September. Blaze handles rent reconciliation, owner statements, payables and month-end close for property-management companies, which is the work that has been piling up for you. Would you have 20 minutes this week for a short call so we can look at how your books are set up today?",
+    "delivered_at": "2026-10-13T19:38:52.493357+00:00",
+    "elapsed_seconds": 6.76
+  },
+  {
+    "id": 3,
+    "received_at": "2026-10-13T19:39:25.359998+00:00",
+    "name": "Dana Whitfield",
+    "email": "dana.whitfield@example.com",
+    "phone": "+1-555-0142",
+    "company": "Northgate Property Group",
+    "doors": 420,
+    "message": "We manage 420 doors across three markets and our books are a mess. Month-end close takes our bookkeeper nine days and we are still chasing late rent from August. Lost our bookkeeper in September and have not replaced her.",
+    "fit_score": 4,
+    "reason": "420 doors, nine-day month-end close, August rent arrears, and their bookkeeper left in September.",
+    "reply": "Dana, nine-day month-end closes and rent still outstanding from August are hard to manage across 420 doors in three markets, and harder still without a bookkeeper since September. Blaze automates the finance function for property managers, covering rent reconciliation, owner statements, payables and month-end close. Would you be open to a 20-minute call this week so we can look at where your books stand and whether Blaze fits?",
+    "delivered_at": "2026-10-13T19:39:29.169238+00:00",
+    "elapsed_seconds": 3.95
+  },
+  {
+    "id": 4,
+    "received_at": "2026-10-13T19:39:31.445029+00:00",
+    "name": "Dana Whitfield",
+    "email": "dana.whitfield@example.com",
+    "phone": "+1-555-0142",
+    "company": "Northgate Property Group",
+    "doors": 420,
+    "message": "We manage 420 doors across three markets and our books are a mess. Month-end close takes our bookkeeper nine days and we are still chasing late rent from August. Lost our bookkeeper in September and have not replaced her.",
+    "fit_score": 4,
+    "reason": "420 doors; books a mess, nine-day close, August arrears, bookkeeper left in September.",
+    "reply": "Dana, running 420 doors across three markets without a bookkeeper since September, with a nine-day close and late rent from August still outstanding, is exactly the workload Blaze is built to take on. Blaze handles rent reconciliation, owner statements, payables and month-end close for property managers, so the backlog doesn't depend on refilling that seat. Would you have 20 minutes this week for a call to walk through how your books are set up today?",
+    "delivered_at": "2026-10-13T19:39:36.054007+00:00",
+    "elapsed_seconds": 4.71
+  }
+]

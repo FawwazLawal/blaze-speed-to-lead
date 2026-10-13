@@ -1,7 +1,7 @@
 # Speed-to-lead
 
 A Facebook lead ad comes in. A scored, personalised reply is sitting in Discord
-**MEASURED_TIME seconds** _(filled in from a real run — see Sample output)_ later.
+**4.7 seconds** later.
 
 Blaze's current first response to an inbound lead takes **22 hours**. 58 qualified
 property managers produced 12 bookings last quarter — 79% lost, with that 22-hour
@@ -75,7 +75,43 @@ sentences, and latency is the entire point of the project.
 
 ## Sample output
 
-_Pending the first live end-to-end run._
+Three consecutive live runs of the fabricated lead, measured end to end —
+request received to Discord acknowledging the card:
+
+| Run | Row | Fit | Elapsed |
+|---|---|---|---|
+| 1 | 2 | 4/5 | **6.76s** |
+| 2 | 3 | 4/5 | **3.95s** |
+| 3 | 4 | 4/5 | **4.71s** |
+
+Run 1 is slowest because the API clients are built lazily on first use, inside
+that request's window. The Anthropic call dominates all three (~4–5s); Supabase
+and Discord are sub-second once the clients exist. Against a 22-hour baseline,
+4.7 seconds is roughly **17,000x faster** — but the honest framing is that the
+useful threshold is "while the lead still has the tab open", and anything in
+single-digit seconds clears it.
+
+The reply from run 1, verbatim:
+
+> Hi Dana, managing 420 doors across three markets with a nine-day month-end
+> close and August rent still outstanding is a heavy load, especially without a
+> bookkeeper since September. Blaze handles rent reconciliation, owner
+> statements, payables and month-end close for property-management companies,
+> which is the work that has been piling up for you. Would you have 20 minutes
+> this week for a short call so we can look at how your books are set up today?
+
+It names the door count, the nine-day close, the August arrears and the missing
+bookkeeper — all four from the lead's own free text. It would not read the same
+for any other lead, which was the bar set in the prompt.
+
+**On the score:** 4, not 5, on all three runs. The rubric puts 420 doors in the
+200–499 band (baseline 3) and adds one for a named finance pain. A 5 would need
+1500+ doors. Getting a consistent, rubric-correct 4 rather than a flattering 5 is
+the evidence that the scoring is doing something.
+
+Full artifacts: [`samples/run_output.json`](samples/run_output.json),
+[`samples/server_log.txt`](samples/server_log.txt),
+[`samples/supabase_rows.json`](samples/supabase_rows.json).
 
 ## How this was built, and what was wrong with it
 
@@ -91,13 +127,14 @@ from that review that turned out to be wrong when checked against a run.
 
 ## Known limitations
 
-**Row Level Security is off** on the `leads` table. It is a deliberate demo
-choice, not an oversight — Supabase warns about it at creation time and the
-warning was read before it was dismissed. RLS on would block the anon key from
-inserting, which is the first step of the pipeline. It is safe in this specific
-case because the project is a throwaway, the only client is a localhost script,
-and no real person's data is ever stored. In production this table would have RLS
-on and writes restricted to a service role.
+**Row Level Security is on, with permissive policies.** The `leads` table has
+explicit `anon` insert/select/update policies (see [`schema.sql`](schema.sql)).
+They allow everything, which is appropriate for a throwaway project whose only
+client is a localhost script and whose only row is a fabricated lead — but it is
+a demo posture, not a production one. A real version would drop these policies
+and write through a service role. This was not the original design: the first
+live run failed on an RLS violation and the fix went this way rather than
+switching RLS off. See [`prompts/CHECKED.md`](prompts/CHECKED.md) entry 5.
 
 **No refusal fallbacks on the Anthropic call.** The `claude-api` guidance is to
 include server-side fallbacks by default on `claude-opus-5-5`. They are omitted
