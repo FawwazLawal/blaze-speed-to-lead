@@ -19,10 +19,23 @@ POST /webhook/lead
   └─ t1 — log and return "received → delivered: N.Ns"
 ```
 
+## What is real and what is simulated
+
+In production, Facebook posts to this webhook when someone submits a lead-ad
+form. This build has no Facebook app review, so `send_test_lead.sh` stands in for
+Facebook with `curl`. **Everything downstream of that POST is real** — real
+Supabase row, real model call, real Discord delivery, real measured time.
+
+The seam is the sender **and the payload shape**. A real Meta webhook does not
+carry the lead — it carries a `leadgen_id`, and the server has to make a second
+authenticated Graph API call to fetch the answers. This build receives the
+flattened six-field payload the task asked to simulate. See
+[Wiring it to a real Facebook lead ad](#wiring-it-to-a-real-facebook-lead-ad)
+for what the real adapter involves.
+
 ## What it is not
 
-This is a deliberately small build. There is no Facebook OAuth — the payload is
-fabricated and fired with `curl`. No UI, no queue, no auth, no
+This is a deliberately small build. No UI, no queue, no auth, no
 deploy, and no application-level retries. One happy path, measured.
 
 **Nothing in this project contacts a real business or person.** The lead is
@@ -156,3 +169,66 @@ the notification reaching a phone. The gap is small but it is not zero, and
 after the pipeline's own `t0`. Computing `delivered_at - received_at` from the
 table gives a marginally shorter figure than `elapsed_seconds` on the same row.
 `elapsed_seconds` is the number to trust.
+
+## Wiring it to a real Facebook lead ad
+
+**I researched this, I did not build it.** Nothing below has been run. It is here
+because "swap curl for Facebook" is glib, and the real shape is worth being
+honest about.
+
+### The payload is not what this project receives
+
+Meta's `leadgen` webhook sends a `page` object with an `entry[].changes[]` array
+where `field` is `leadgen`. The `value` carries `leadgen_id`, `page_id`,
+`form_id`, `ad_id` and `created_time` — **and no lead data at all**. No name, no
+email.
+
+To get the answers you make a second, authenticated call:
+
+```
+GET /{leadgen_id}?fields=created_time,ad_id,form_id,field_data
+    &access_token={PAGE_ACCESS_TOKEN}
+```
+
+`field_data` comes back as an array of `{name, values}` pairs whose names vary
+per form — custom questions sit alongside the standard ones. So "# of doors"
+would be a custom question mapped explicitly, not a guaranteed key.
+
+### What would actually have to be built
+
+1. **`GET /webhook/lead` for verification.** Meta calls it with `hub.mode`,
+   `hub.verify_token` and `hub.challenge`. Check the mode is `subscribe` and the
+   token matches the one set in the App Dashboard, then echo `hub.challenge`
+   back with a 200. Mismatch returns 403.
+2. **An adapter** that takes `leadgen_id`, makes the Graph call, and maps
+   `field_data` onto this project's `Lead` model. Field mapping is explicit
+   per form; there is no fixed schema.
+3. **Return 200 immediately and queue the work.** Currently this pipeline does
+   everything inline before responding. Against a real webhook that is wrong —
+   Meta wants a fast acknowledgement, and the fetch plus model call belong on a
+   queue. This is the same change the "one happy path" limitation above calls for.
+4. **Page access token handling.** Page tokens expire; a long-lived or
+   system-user token is needed rather than one pulled from Graph API Explorer.
+
+### The part that is calendar time, not code
+
+- **Subscribe the app to the `leadgen` field** in App Dashboard → Webhooks →
+  Page object, then subscribe the specific Page:
+  `POST /{page-id}/subscribed_apps?subscribed_fields=leadgen`, authenticated with
+  the **Page** access token, not the app token.
+- **App Review.** Meta's Lead Ads guide requires `leads_retrieval` and
+  `pages_manage_ads` in the submission. Other guides list more —
+  `pages_read_engagement`, `pages_manage_metadata`, `pages_show_list`, and
+  `ads_management` or `pages_manage_ads` depending on the source. **The guides
+  disagree and I did not resolve it**; the current Meta docs are the only
+  authority. Business Verification is part of this.
+- **Before review**, app admins and testers can test against their own account —
+  which is how you would develop it.
+
+Sources: [Meta — Webhooks for leadgen](https://developers.facebook.com/docs/graph-api/webhooks/getting-started/webhooks-for-leadgen/),
+[Meta — Retrieving Leads](https://developers.facebook.com/documentation/ads-commerce/marketing-api/guides/lead-ads/retrieving),
+[Meta — Lead Ads guide](https://developers.facebook.com/documentation/ads-commerce/marketing-api/guides/lead-ads).
+
+**Estimate:** the code is a few hours. App Review and Business Verification are
+days to weeks of waiting, which is exactly why a two-hour build simulates the
+payload instead.
