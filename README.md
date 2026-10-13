@@ -93,29 +93,28 @@ request received to Discord acknowledging the card:
 
 | Run | Row | Fit | Elapsed |
 |---|---|---|---|
-| 1 | 2 | 4/5 | **6.76s** |
-| 2 | 3 | 4/5 | **3.95s** |
-| 3 | 4 | 4/5 | **4.71s** |
+| 1 | 6 | 4/5 | **4.80s** |
+| 2 | 7 | 4/5 | **4.99s** |
+| 3 | 8 | 4/5 | **3.04s** |
 
-Run 1 is slowest because the API clients are built lazily on first use, inside
-that request's window. The Anthropic call dominates all three (~4–5s); Supabase
-and Discord are sub-second once the clients exist. Against a 22-hour baseline,
-4.7 seconds is roughly **17,000x faster** — but the honest framing is that the
-useful threshold is "while the lead still has the tab open", and anything in
-single-digit seconds clears it.
+The Anthropic call dominates all three (~3–4s); Supabase and Discord are
+sub-second. A first run on a cold process is slower by about a second, because
+the API clients are built lazily on first use inside that request's window.
+Against a 22-hour baseline the useful framing is not the multiple — it is that
+the reply lands while the lead still has the tab open.
 
-The reply from run 1, verbatim:
+The reply from run 3, verbatim:
 
-> Hi Dana, managing 420 doors across three markets with a nine-day month-end
-> close and August rent still outstanding is a heavy load, especially without a
-> bookkeeper since September. Blaze handles rent reconciliation, owner
-> statements, payables and month-end close for property-management companies,
-> which is the work that has been piling up for you. Would you have 20 minutes
-> this week for a short call so we can look at how your books are set up today?
+> Hi Dana, losing your bookkeeper in September and still facing a nine-day close
+> sounds exhausting. Blaze takes over the bookkeeping for property managers so
+> month-end stops depending on one hire. Free for 15 minutes this week?
 
-It names the door count, the nine-day close, the August arrears and the missing
-bookkeeper — all four from the lead's own free text. It would not read the same
-for any other lead, which was the bar set in the prompt.
+36 words. It picks **one** detail from the lead's own message rather than
+mirroring back all four, says what Blaze does in a single clause instead of
+listing features, and puts a low-friction ask where attention still is. An
+earlier version of the prompt produced a correct but 70-word reply that read like
+a brochure; the prompt now caps length and bans the feature list. See
+[`prompts/CHECKED.md`](prompts/CHECKED.md) entry 8.
 
 **On the score:** 4, not 5, on all three runs. The rubric puts 420 doors in the
 200–499 band (baseline 3) and adds one for a named finance pain. A 5 would need

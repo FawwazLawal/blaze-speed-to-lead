@@ -1,9 +1,9 @@
 {
   "_note": "Real output from a live end-to-end run on 2026-10-13, copied verbatim from the HTTP response. The lead is fabricated; see sample_lead.json.",
-  "row_id": 2,
+  "row_id": 8,
   "fit_score": 4,
-  "reason": "420 doors, books a mess: nine-day month-end close, August arrears, bookkeeper left in September and not replaced.",
-  "reply": "Hi Dana, managing 420 doors across three markets with a nine-day month-end close and August rent still outstanding is a heavy load, especially without a bookkeeper since September. Blaze handles rent reconciliation, owner statements, payables and month-end close for property-management companies, which is the work that has been piling up for you. Would you have 20 minutes this week for a short call so we can look at how your books are set up today?",
-  "elapsed_seconds": 6.76,
+  "reason": "420 doors plus named finance pain: nine-day close, August arrears, bookkeeper lost in September.",
+  "reply": "Hi Dana, losing your bookkeeper in September and still facing a nine-day close sounds exhausting. Blaze takes over the bookkeeping for property managers so month-end stops depending on one hire. Free for 15 minutes this week?",
+  "elapsed_seconds": 3.04,
   "delivered_under_60s": true
 }
