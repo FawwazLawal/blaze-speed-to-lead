@@ -1,5 +1,6 @@
 -- Supabase table for the speed-to-lead pipeline.
 -- Paste this whole file into the Supabase SQL editor and hit Run.
+-- Safe to re-run: every statement is idempotent.
 
 create table if not exists leads (
   id               bigserial primary key,
@@ -23,7 +24,28 @@ create table if not exists leads (
   elapsed_seconds  numeric(6,2)
 );
 
--- Row Level Security is intentionally left OFF for this demo: the project is a
--- throwaway, the only client is a localhost script holding the anon key, and no
--- real person's data is ever stored. In production this table would have RLS on
--- with writes restricted to a service role. Noted in the README as well.
+-- Row Level Security stays ON, with explicit policies for the anon role.
+--
+-- The pipeline authenticates with the anon key, so without a policy every
+-- insert fails with "new row violates row-level security policy" — which is
+-- exactly what happened on the first live run. Granting access explicitly is
+-- preferred here over turning RLS off: it is scoped to this one table, it is
+-- visible in the schema, and it leaves Supabase's own security linter clean.
+--
+-- These policies are permissive because this is a throwaway demo project whose
+-- only client is a localhost script and whose only row is a fabricated lead. A
+-- production version would drop them and write through a service role instead.
+
+alter table leads enable row level security;
+
+drop policy if exists "demo anon insert" on leads;
+create policy "demo anon insert" on leads
+  for insert to anon with check (true);
+
+drop policy if exists "demo anon select" on leads;
+create policy "demo anon select" on leads
+  for select to anon using (true);
+
+drop policy if exists "demo anon update" on leads;
+create policy "demo anon update" on leads
+  for update to anon using (true) with check (true);
