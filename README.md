@@ -113,7 +113,8 @@ The reply from run 3, verbatim:
 mirroring back all four, says what Blaze does in a single clause instead of
 listing features, and puts a low-friction ask where attention still is. An
 earlier version of the prompt produced a correct but 70-word reply that read like
-a brochure; the prompt now caps length and bans the feature list.
+a brochure; the prompt now caps length and bans the feature list. See
+[`prompts/CHECKED.md`](prompts/CHECKED.md) entry 8.
 
 **On the score:** 4, not 5, on all three runs. The rubric puts 420 doors in the
 200–499 band (baseline 3) and adds one for a named finance pain. A 5 would need
@@ -124,6 +125,24 @@ Full artifacts: [`samples/run_output.json`](samples/run_output.json),
 [`samples/server_log.txt`](samples/server_log.txt),
 [`samples/supabase_rows.json`](samples/supabase_rows.json).
 
+## How this was built, and what was wrong with it
+
+Built with Claude Code (Opus 5). Every prompt is in [`prompts/`](prompts/), saved
+as it was used rather than reconstructed afterwards.
+
+[`prompts/CHECKED.md`](prompts/CHECKED.md) is the honest part: nine entries
+logging what the model got wrong, how each was caught, and what changed. Among
+them: an SDK version written from memory that was a full major release out of
+date, so the one call this project depends on would not have existed; a failed
+Discord POST that would have printed the webhook token into the terminal, found
+by an adversarial code review and then confirmed in the wild when Discord really
+did return a 503; a row-level-security failure that no amount of code review
+could have caught, because the code was self-consistent and the wrong assumption
+was about the database; and a drafted reply that satisfied every rule in the
+prompt and was still not worth sending.
+
+It also records the two places that review was wrong, and why.
+
 ## Known limitations
 
 **Row Level Security is on, with permissive policies.** The `leads` table has
@@ -133,11 +152,12 @@ client is a localhost script and whose only row is a fabricated lead — but it 
 a demo posture, not a production one. A real version would drop these policies
 and write through a service role. This was not the original design: the first
 live run failed on an RLS violation and the fix went this way rather than
-switching RLS off.
+switching RLS off. See [`prompts/CHECKED.md`](prompts/CHECKED.md) entry 5.
 
-**No refusal fallbacks on the Anthropic call.** Server-side fallbacks are
-omitted: they need a beta header and the `client.beta.messages` path, and a
-safety refusal while scoring a fabricated property-management lead is close to
+**No refusal fallbacks on the Anthropic call.** The `claude-api` guidance is to
+include server-side fallbacks by default on `claude-opus-5-5`. They are omitted
+here: they need a beta header and the `client.beta.messages` path, and a safety
+refusal while scoring a fabricated property-management lead is close to
 impossible. Called out rather than quietly dropped.
 
 **One happy path.** No queue, no dead-letter handling, and no application-level
